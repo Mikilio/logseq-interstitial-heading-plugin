@@ -133,16 +133,17 @@ function journalDate() {
 
 async function parseQuery(randomQuery,queryTag){
   // https://stackoverflow.com/questions/19156148/i-want-to-remove-double-quotes-from-a-string
-  let query = `[:find (pull ?b [*])
+  let query = `[:find (pull ?b [*]) :in $
   :where
-  [?b :block/path-refs [:block/name "${queryTag.toLowerCase().trim().replace(/^["'](.+(?=["']$))["']$/, '$1')}"]]]`
+    [?p :block/name "${queryTag.toLowerCase().trim().replace(/^["'](.+(?=["']$))["']$/, '$1')}"]
+    [?b :block/refs ?p]]`
   if ( randomQuery == "yesterday" ) {
-    query = `[:find (pull ?b [*])
+    query = `[:find (pull ?b [*]) :in $
     :where
-    [?b :block/path-refs [:block/name "${queryTag.toLowerCase().trim().replace(/^["'](.+(?=["']$))["']$/, '$1')}"]]
-    [?b :block/page ?p]
-    [?p :block/journal? true]
-    [?p :block/journal-day ${journalDate()}]]`
+      [?p :block/name "${queryTag.toLowerCase().trim().replace(/^["'](.+(?=["']$))["']$/, '$1')}"]
+      [?b :block/refs ?p]
+      [?p :block/journal? true]
+      [?p :block/journal-day ${journalDate()}]]`
   }
   try { 
     let results = await logseq.DB.datascriptQuery(query) 
