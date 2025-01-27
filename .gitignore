@@ -119,3 +119,13 @@ dist
 .pnp.*
 yarn.lock
 
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+.envrc
+
+# pre-commit
+.pre-commit-config.yaml

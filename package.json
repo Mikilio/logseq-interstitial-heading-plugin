@@ -1,7 +1,7 @@
 {
   "name": "logseq-interstitial-heading-plugin",
-  "version": "0.1.5",
-  "author": "Alex Qwxlea",
+  "version": "0.1.6",
+  "author": "Mikilio",
   "description": "Interstitial Journaling plugin. Insert a (bold) timestamps, random notes, or notes to self.",
   "main": "dist/index.html",
   "targets": {
