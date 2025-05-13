@@ -1,27 +1,28 @@
 {
   "name": "logseq-interstitial-heading-plugin",
-  "version": "0.1.6",
-  "author": "Mikilio",
+  "version": "0.1.7",
+  "author": "@Mikilio",
+  "license": "MIT",
   "description": "Interstitial Journaling plugin. Insert a (bold) timestamps, random notes, or notes to self.",
   "main": "dist/index.html",
   "targets": {
     "main": false
   },
   "scripts": {
-    "build": "parcel build --public-url ./ --no-source-maps index.html",
-    "preview": "gh-social-preview.py -t \"Logseq Interstial Journaling Plugin\" -e \"Solves procrastination, helps with decision making and makes you totally productive\" -i \"background.png\" -f \"BebasNeue-Regular.ttf\" -b \"Montserrat-VariableFont_wght.ttf\" -l icon2.png -v \"$npm_package_version\""
+    "dev": "parcel ./index.html",
+    "build": "parcel build --public-url ./ --no-source-maps index.html"
   },
   "logseq": {
+    "main": "dist/index.html",
     "icon": "icon.png",
     "title": "Logseq Interstitial Journal",
     "id": "logseq-interstitial-heading-plugin"
   },
   "dependencies": {
-    "@logseq/libs": "^0.0.1-alpha.35"
+    "dayjs": "^1.11.10"
   },
   "devDependencies": {
-    "parcel": "^2.0.0",
-    "axios": "^0.26.1"
-  },
-  "license": "MIT"
+    "@logseq/libs": "^0.0.17",
+    "parcel": "2.9.3"
+  }
 }
