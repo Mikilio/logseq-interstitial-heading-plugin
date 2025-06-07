@@ -3,6 +3,7 @@ import { BlockEntity, SettingSchemaDesc } from "@logseq/libs/dist/LSPlugin.user"
 import dayjs from 'dayjs';
 
 interface PluginSettings {
+  timestampTopLevel: boolean;
   timestampFormat: string;
   timestampShortcut: string;
 }
@@ -10,6 +11,13 @@ interface PluginSettings {
 
 const pluginName = ["logseq-interstitial", "Logseq Interstitial"]
 const settingsTemplate: SettingSchemaDesc[] = [
+  {
+    key: "timestampTopLevel",
+    type: "boolean",
+    default: true,
+    title: "Timestamp Top-Level Block",
+    description: "Whether the plugin should automatically timestamp the top-level blocks of a journal page",
+  },
   {
     key: "timestampFormat",
     type: "string",
@@ -101,14 +109,28 @@ async function insertInterstitional() {
   }
 }
 
-async function maybeTimestampBlock(block: BlockEntity) {
-  if (!block.parent?.id) return;
 
+async function maybeTimestampBlock(block: BlockEntity) {
+  const settings = logseq.settings as unknown as PluginSettings;
   const parent = await logseq.Editor.getBlock(block.parent.id, { includeChildren: false });
+  const page = await logseq.Editor.getPage(block.page.id);
+  console.log(`Parent: ${parent?.id}, Page: ${page?.id}, Journal: ${page?.['journal?']}`);
+
+  let shouldUpdate = false;
+
   if (parent?.properties?.interstitialTemplate) {
+    shouldUpdate = true;
+  } 
+
+  if (settings.timestampTopLevel && page?.['journal?'] && !parent) {
+    shouldUpdate = true;
+  }
+
+  if (shouldUpdate) {
     await updateBlock(block);
   }
 }
+
 
 const main = async () => {
   console.log(`Plugin: ${pluginName[1]} loaded`)

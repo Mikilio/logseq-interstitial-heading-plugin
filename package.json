@@ -14,7 +14,7 @@
   },
   "logseq": {
     "main": "dist/index.html",
-    "icon": "icon.png",
+    "icon": "img/icon.png",
     "title": "Logseq Interstitial Journal",
     "id": "logseq-interstitial-heading-plugin"
   },
