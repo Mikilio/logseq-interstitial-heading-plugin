@@ -8,8 +8,12 @@ interface PluginSettings {
   timestampShortcut: string;
 }
 
+type LogseqAppWithUnregister = typeof logseq.App & {
+  unregister_plugin_simple_command?: (key: string) => void;
+};
 
 const pluginName = ["logseq-interstitial", "Logseq Interstitial"]
+const timestampShortcutCommandKey = "insert-interstitial-timestamp"
 const settingsTemplate: SettingSchemaDesc[] = [
   {
     key: "timestampTopLevel",
@@ -34,6 +38,37 @@ const settingsTemplate: SettingSchemaDesc[] = [
   }
 ]
 logseq.useSettingsSchema(settingsTemplate)
+
+function getTimestampShortcut(settings: PluginSettings): string {
+  const shortcut = typeof settings.timestampShortcut === "string"
+    ? settings.timestampShortcut.trim().toLowerCase()
+    : "";
+
+  return shortcut !== "" ? shortcut : "mod+t";
+}
+
+function registerTimestampShortcut(settings: PluginSettings) {
+  logseq.App.registerCommandPalette(
+    {
+      key: timestampShortcutCommandKey,
+      label: "Insert interstitial timestamp",
+      keybinding: {
+        mode: "global",
+        binding: getTimestampShortcut(settings),
+      },
+    },
+    async () => {
+      await insertInterstitional();
+    }
+  );
+}
+
+function unregisterTimestampShortcut() {
+  // The shortcut is keyed under the plugin id; remove the old binding before re-registering.
+  (logseq.App as LogseqAppWithUnregister).unregister_plugin_simple_command?.(
+    `${logseq.baseInfo.id}/${timestampShortcutCommandKey}`
+  );
+}
 
 function buildRegexFromFormat(format: string): RegExp {
   const tokenMap: Record<string, string> = {
@@ -86,6 +121,12 @@ async function updateBlock(block: BlockEntity, update: boolean = false) {
 
   const hasRealContent = cleanedContent.length > 0;
   const isAlreadyStamped = timeRegex.test(block.content);
+  const isEmptyBlock = contentWithoutTimestamp.trim() === "";
+
+  if (update && isEmptyBlock && !isAlreadyStamped) {
+    await logseq.Editor.updateBlock(block.uuid, timeMarkup);
+    return;
+  }
 
   if ((update && hasRealContent) || (!isAlreadyStamped && hasRealContent)) {
     await logseq.Editor.updateBlock(
@@ -139,6 +180,9 @@ const main = async () => {
     throw new Error("logseq.settings is not defined!");
   }
 
+  const settings = logseq.settings as unknown as PluginSettings;
+  let registeredTimestampShortcut = getTimestampShortcut(settings);
+
   logseq.Editor.registerSlashCommand('Mark as Interstitial Template', async () => {
     const block = await logseq.Editor.getCurrentBlock();
     if (block?.uuid) {
@@ -146,12 +190,18 @@ const main = async () => {
     }
   });
 
-  logseq.App.registerCommandShortcut(
-    { binding: logseq.settings?.timestampShortcut as string },
-    () => {
-      insertInterstitional()
+  registerTimestampShortcut(settings);
+
+  logseq.onSettingsChanged((updatedSettings) => {
+    const nextShortcut = getTimestampShortcut(updatedSettings as unknown as PluginSettings);
+    if (nextShortcut === registeredTimestampShortcut) {
+      return;
     }
-  );
+
+    unregisterTimestampShortcut();
+    registerTimestampShortcut(updatedSettings as unknown as PluginSettings);
+    registeredTimestampShortcut = nextShortcut;
+  });
 
   logseq.DB.onChanged((e) => {
     if (e.txMeta?.outlinerOp == "save-block" || e.txMeta?.outlinerOp == "saveBlock") {

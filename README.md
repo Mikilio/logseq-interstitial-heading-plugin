@@ -106,7 +106,7 @@ The behavior will be the same as for the Journal page: Only top-level child bloc
 
 ![interstial journal example](./img/journal.png)
 
-- By default, you can use `Ctrl-t` to insert a timestamp in the current block/line.
+- By default, you can use `mod+t` (`Ctrl+t` on Windows/Linux, `Cmd+t` on macOS) to insert a timestamp in the current block/line.
 
 ### Configuration
 
