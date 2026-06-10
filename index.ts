@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 interface PluginSettings {
   timestampTopLevel: boolean;
   timestampFormat: string;
+  timestampSeparator: string;
   timestampShortcut: string;
 }
 
@@ -28,6 +29,13 @@ const settingsTemplate: SettingSchemaDesc[] = [
     default: "HH:mm",
     title: "Timestamp Format",
     description: "Use any format supported by dayjs. Example: 'HH:mm', 'YYYY-MM-DD HH:mm', 'dddd h:mm A'",
+  },
+  {
+    key: "timestampSeparator",
+    type: "string",
+    default: "",
+    title: "Entry Separator",
+    description: "Optional. When set, the timestamp gets its own line and your entry starts below it, prefixed by this separator (e.g. '+', '-', '|', ':') with a trailing space. Leave blank to keep the plain timestamp.",
   },
   {
     key: "timestampShortcut",
@@ -106,8 +114,15 @@ async function updateBlock(block: BlockEntity, update: boolean = false) {
     ? settings.timestampFormat.trim()
     : "HH:mm";
 
+  const separator = typeof settings.timestampSeparator === "string"
+    ? settings.timestampSeparator.trim()
+    : "";
+
   const now = dayjs();
   const timeMarkup = now.format(formatStr);
+  // With a separator set, the timestamp gets its own line and the entry starts on
+  // the next line prefixed by the separator, e.g. "09:22\n+".
+  const stampPrefix = separator ? `${timeMarkup}\n${separator}` : timeMarkup;
 
   const timeRegex = buildRegexFromFormat(formatStr);
 
@@ -117,6 +132,11 @@ async function updateBlock(block: BlockEntity, update: boolean = false) {
     console.log(contentWithoutTimestamp + "time:" + timeRegex);
   }
 
+  // Drop a previously inserted separator so re-stamping doesn't stack them.
+  if (separator && contentWithoutTimestamp.startsWith(separator)) {
+    contentWithoutTimestamp = contentWithoutTimestamp.slice(separator.length).trimStart();
+  }
+
   const cleanedContent = contentWithoutTimestamp.replace(/\{\{[^}]*\}\}/g, '').trim();
 
   const hasRealContent = cleanedContent.length > 0;
@@ -124,14 +144,15 @@ async function updateBlock(block: BlockEntity, update: boolean = false) {
   const isEmptyBlock = contentWithoutTimestamp.trim() === "";
 
   if (update && isEmptyBlock && !isAlreadyStamped) {
-    await logseq.Editor.updateBlock(block.uuid, timeMarkup);
+    // Pre-fill a trailing space after the separator so typing continues after "+ ".
+    await logseq.Editor.updateBlock(block.uuid, separator ? `${stampPrefix} ` : stampPrefix);
     return;
   }
 
   if ((update && hasRealContent) || (!isAlreadyStamped && hasRealContent)) {
     await logseq.Editor.updateBlock(
       block.uuid,
-      `${timeMarkup} ${contentWithoutTimestamp}`.trim()
+      `${stampPrefix} ${contentWithoutTimestamp}`.trim()
     );
   }
 }
