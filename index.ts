@@ -28,14 +28,14 @@ const settingsTemplate: SettingSchemaDesc[] = [
     type: "string",
     default: "HH:mm",
     title: "Timestamp Format",
-    description: "Use any format supported by dayjs. Example: 'HH:mm', 'YYYY-MM-DD HH:mm', 'dddd h:mm A'",
+    description: "Accepts any valid Day.js format string (e.g., 'HH:mm', 'YYYY-MM-DD HH:mm', or 'dddd h:mm A'). To append a '+' or '-' suffix directly to the formatted timestamp, simply include it at the end of your format string.",
   },
   {
     key: "timestampSeparator",
     type: "string",
     default: "",
-    title: "Entry Separator",
-    description: "Optional. When set, the timestamp gets its own line and your entry starts below it, prefixed by this separator (e.g. '+', '-', '|', ':') with a trailing space. Leave blank to keep the plain timestamp.",
+    title: "Timestamp Header Styling",
+    description: "When in use, the timestamp gets its own line (like a header for the node) and your entry starts below it, which can be prefixed by any separator of your choosing (e.g. '+', '-', '*') which will be followed by a space before the entry. Leave this field empty to use the default plain timestamp format.",
   },
   {
     key: "timestampShortcut",
