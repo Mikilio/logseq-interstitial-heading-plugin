@@ -7,7 +7,7 @@ on:
       - '*' # Push events to matching any tag format, i.e. 1.0, 20.15.10
 
 env:
-  PLUGIN_NAME: logseq-interstial-heading-plugin
+  PLUGIN_NAME: logseq-interstitial-heading-plugin
 
 jobs:
   build:
@@ -26,7 +26,8 @@ jobs:
           yarn install
           yarn build
           mkdir ${{ env.PLUGIN_NAME }}
-          cp README.md package.json ./img/icon.png ${{ env.PLUGIN_NAME }}
+          cp README.md package.json ${{ env.PLUGIN_NAME }}
+          cp -r img ${{ env.PLUGIN_NAME }}
           mv dist ${{ env.PLUGIN_NAME }}
           zip -r ${{ env.PLUGIN_NAME }}.zip ${{ env.PLUGIN_NAME }}
           ls
